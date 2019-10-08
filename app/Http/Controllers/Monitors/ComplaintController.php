@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Monitors;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Monitors\Complaint;
-use Illuminate\Database\QueryException;
 use Yajra\DataTables\Facades\DataTables;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ComplaintController extends Controller
 {
@@ -141,6 +141,49 @@ class ComplaintController extends Controller
     {
         $data = Complaint::get();
 
-        return view('monitors.complaint.print', compact('data'));
+        $path = public_path() . '/storage/template/laporan_komplain.xls';
+
+        $file = 'Laporan_Komplain_Per_'.date('ymd');
+
+        return Excel::load($path, function($reader) use ($data) {
+            $reader->sheet('Sheet1', function($sheet) use ($data) {
+                $rowExcel = 7;
+
+                $no = 1;
+
+                $styleThinBlackBorderAllLine = array(
+                    'allborders' => array(
+                        'style' => 'thin',
+                        'color' => array(
+                            'rgb' => '000000'
+                        )
+                    )
+                );
+
+                foreach ($data as $val) {
+                    $sheet->getStyle('A' . $rowExcel . ':H' . $rowExcel)->getBorders()->applyFromArray($styleThinBlackBorderAllLine);
+                    $sheet->setCellValue('A' . $rowExcel, $no);
+                    $sheet->setCellValue('B' . $rowExcel, $val->created_at);
+                    $sheet->setCellValue('C' . $rowExcel, $val->complain_failure);
+                    $sheet->setCellValue('D' . $rowExcel, $val->complain_desc);
+                    $sheet->setCellValue('E' . $rowExcel, $val->complain_name);
+                    $sheet->setCellValue('F' . $rowExcel, $val->complain_address);
+                    $sheet->setCellValue('G' . $rowExcel, $val->complain_follow_up);
+
+                    if($val->complain_status == 1) {
+                        $status = 'Open';
+                    } else if($val->complain_status == 2) {
+                        $status = 'Close';
+                    } else {
+                        $status = '';
+                    }
+
+                    $sheet->setCellValue('H' . $rowExcel, $status);
+
+                    $rowExcel++;
+                    $no++;
+                }
+            });
+        })->setFilename($file)->export('xls');
     }
 }

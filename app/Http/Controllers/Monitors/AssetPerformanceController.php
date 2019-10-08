@@ -8,6 +8,7 @@ use App\Models\Masters\AssetGroup;
 use App\Models\Monitors\AssetPerformance;
 use Illuminate\Database\QueryException;
 use Yajra\DataTables\Facades\DataTables;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AssetPerformanceController extends Controller
 {
@@ -82,7 +83,7 @@ class AssetPerformanceController extends Controller
                 })
                 ->rawColumns(['kelompok', 'code', 'aset', 'status', 'action']);
 
-            return $data->make(true);            
+            return $data->make(true);
         } else {
             return abort('404', 'Upps');
         }
@@ -168,6 +169,48 @@ class AssetPerformanceController extends Controller
     {
         $data = AssetPerformance::get();
 
-        return view('monitors.perfom.print', compact('data'));
+        $path = public_path() . '/storage/template/laporan_performa.xls';
+
+        $file = 'Laporan_Performa_Aset_Per_'.date('ymd');
+
+        return Excel::load($path, function($reader) use ($data) {
+            $reader->sheet('Sheet1', function($sheet) use ($data) {
+                $rowExcel = 7;
+
+                $no = 1;
+
+                $styleThinBlackBorderAllLine = array(
+                    'allborders' => array(
+                        'style' => 'thin',
+                        'color' => array(
+                            'rgb' => '000000'
+                        )
+                    )
+                );
+
+                foreach ($data as $val) {
+                    $sheet->getStyle('A' . $rowExcel . ':G' . $rowExcel)->getBorders()->applyFromArray($styleThinBlackBorderAllLine);
+                    $sheet->setCellValue('A' . $rowExcel, $no);
+                    $sheet->setCellValue('B' . $rowExcel, $val->kelompok->assetgrp_name);
+                    $sheet->setCellValue('C' . $rowExcel, $val->aset->code);
+                    $sheet->setCellValue('D' . $rowExcel, $val->aset->tipe->type_desc);
+                    $sheet->setCellValue('E' . $rowExcel, '');
+
+                    if($val->assetperf_is_work == 1) {
+                        $status = 'Berfungsi';
+                    } else if($val->assetperf_is_work == 2) {
+                        $status = 'Tidak Berfungsi';
+                    } else {
+                        $status = '';
+                    }
+
+                    $sheet->setCellValue('F' . $rowExcel, $status);
+                    $sheet->setCellValue('G' . $rowExcel, $val->assetperf_percentage);
+
+                    $rowExcel++;
+                    $no++;
+                }
+            });
+        })->setFilename($file)->export('xls');
     }
 }
