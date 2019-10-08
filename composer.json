@@ -19,6 +19,7 @@
         "laravel/tinker": "^1.0",
         "laravelcollective/html": "^5.8",
         "league/fractal": "^0.18.0",
+        "maatwebsite/excel": "~2.1.0",
         "nwidart/laravel-menus": "^4.0-dev",
         "santigarcor/laratrust": "^5.2",
         "yajra/laravel-datatables-oracle": "^9.4"

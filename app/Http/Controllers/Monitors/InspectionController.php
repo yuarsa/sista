@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Masters\AssetGroup;
 use App\Models\Monitors\Inspection;
-use Illuminate\Database\QueryException;
 use Yajra\DataTables\Facades\DataTables;
+use Maatwebsite\Excel\Facades\Excel;
 
 class InspectionController extends Controller
 {
@@ -152,10 +152,59 @@ class InspectionController extends Controller
         //
     }
 
-    public function printTable()
+    public function export()
     {
         $data = Inspection::get();
 
-        return view('monitors.inspection.print', compact('data'));
+        $path = public_path() . '/storage/template/laporan_inspeksi.xls';
+
+        $file = 'Laporan_Inspeksi_Per_'.date('ymd');
+
+        return Excel::load($path, function($reader) use ($data) {
+            $reader->sheet('Sheet1', function($sheet) use ($data) {
+                $sheet->setCellValue('C4', date('Y-m-d'));
+
+                $rowExcel = 11;
+
+                $no = 1;
+
+                $styleThinBlackBorderAllLine = array(
+                    'allborders' => array(
+                        'style' => 'thin',
+                        'color' => array(
+                            'rgb' => '000000'
+                        )
+                    )
+                );
+
+                foreach ($data as $val) {
+                    $lokasi = $val->area->area_name.', '.$val->area->ruas->ruas_name.', '.$val->area->region->reg_name;
+
+                    if($val->insp_status == '1') {
+                        $status = 'Open';
+                    } else if($val->insp_status == '2') {
+                        $status = 'Close';
+                    } else {
+                        $status = '';
+                    }
+
+                    $sheet->getStyle('A' . $rowExcel . ':L' . $rowExcel)->getBorders()->applyFromArray($styleThinBlackBorderAllLine);
+                    $sheet->setCellValue('A' . $rowExcel, $no);
+                    $sheet->setCellValue('B' . $rowExcel, $val->kelompok->assetgrp_name);
+                    $sheet->setCellValue('C' . $rowExcel, $val->aset->code);
+                    $sheet->setCellValue('D' . $rowExcel, $val->aset->tipe->type_desc);
+                    $sheet->setCellValue('E' . $rowExcel, '');
+                    $sheet->setCellValue('F' . $rowExcel, $lokasi);
+                    $sheet->setCellValue('G' . $rowExcel, $val->insp_desc);
+                    $sheet->setCellValue('H' . $rowExcel, $val->insp_volume);
+                    $sheet->setCellValue('I' . $rowExcel, $val->matrik->matrik_name.' ('.$val->matrik->fault->fault_name.')');
+                    $sheet->setCellValue('J' . $rowExcel, $val->matrik->repair->repair_name);
+                    $sheet->setCellValue('K' . $rowExcel, $val->insp_follow_up);
+                    $sheet->setCellValue('L' . $rowExcel, $status);
+                    $rowExcel++;
+                    $no++;
+                }
+            });
+        })->setFilename($file)->export('xls');
     }
 }
