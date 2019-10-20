@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Auth\OauthRefreshToken;
+use App\Models\Auth\Role;
 use App\Models\Auth\User;
 use App\Transformers\Auth\AuthTransformer;
 use Illuminate\Support\Facades\Hash;
@@ -30,20 +31,24 @@ class AuthController extends Controller
 
         if($user) {
             if(Hash::check($password, $user->password)) {
-                $client = \Laravel\Passport\Client::where('password_client', 1)->first();
+                if(!$user->hasRole('spv')) {
+                    return $this->withCustomErrorResponse(401, "You don't have supervisor rule");
+                } else {
+                    $client = \Laravel\Passport\Client::where('password_client', 1)->first();
 
-                $access = [
-                    'grant_type' => 'password',
-                    'client_id' => $client->id,
-                    'client_secret' => $client->secret,
-                    'username' => $user->email,
-                    'password' => $password,
-                    'scope' => ''
-                ];
+                    $access = [
+                        'grant_type' => 'password',
+                        'client_id' => $client->id,
+                        'client_secret' => $client->secret,
+                        'username' => $user->email,
+                        'password' => $password,
+                        'scope' => ''
+                    ];
 
-                $token = $request->create('/oauth/token', 'POST', $access);
+                    $token = $request->create('/oauth/token', 'POST', $access);
 
-                return app()->handle($token);
+                    return app()->handle($token);
+                }
             } else {
                 return $this->withCustomErrorResponse(422, 'Password Incorrect');
             }

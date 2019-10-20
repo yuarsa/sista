@@ -78,16 +78,20 @@ class LoginController extends Controller
     protected function authenticated(Request $request, $user)
     {
         if(!$user->hasRole('superadmin')) {
-            $path = session('url.intended', '/');
+            if($user->hasRole('spv')) {
+                $request->session()->flush();
 
-            if (!str_contains($path, '/')) {
-                $path = '/';
+                return redirect(url('login'));
+            } else {
+                $path = session('url.intended', '/');
+
+                if (!str_contains($path, '/')) {
+                    $path = '/';
+                }
+
+                return redirect($path);
             }
-
-            return redirect($path);
         }
-
-        return redirect('/');
     }
 
     /**

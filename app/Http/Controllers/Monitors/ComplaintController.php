@@ -31,7 +31,7 @@ class ComplaintController extends Controller
 
             $status = $request->status_id;
 
-            $select = Complaint::orderBy('created_at', 'DESC');
+            $select = Complaint::where('complain_status', 1)->orderBy('created_at', 'DESC');
 
             if($from != '' AND $to != '') {
                 $select = $select->between($from. ' 00:00:00', $to. ' 23:59:59');

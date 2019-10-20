@@ -32,7 +32,7 @@ class InspectionController extends Controller
 
             $to = $request->to;
 
-            $select = Inspection::with(['kelompok', 'area', 'aset']);
+            $select = Inspection::with(['kelompok', 'area', 'aset'])->where('insp_status', 1);
 
             if($kelompok != '') {
                 $select = $select->where('insp_asset_group_id', $kelompok);
