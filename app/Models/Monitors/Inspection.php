@@ -33,6 +33,8 @@ class Inspection extends Model
         'insp_follow_up_image1',
         'insp_follow_up_image2',
         'insp_follow_up_image3',
+        'insp_user_id',
+        'insp_shift_id',
         'created_at',
         'updated_at',
     ];

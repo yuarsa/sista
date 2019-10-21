@@ -44,7 +44,7 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('performances_print', 'AssetPerformanceController@printTable');
             Route::resource('inspections', 'InspectionController');
             Route::get('inspections_data', 'InspectionController@datatables');
-            Route::get('inspections_print', 'InspectionController@export');
+            Route::post('inspections_print', 'InspectionController@export');
             Route::resource('complaints', 'ComplaintController');
             Route::get('complaints_data', 'ComplaintController@datatables');
             Route::get('complaints_print', 'ComplaintController@printTable');
