@@ -18,6 +18,24 @@
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
+                        <label>Rest Area</label>
+                        {{ Form::select('area_id', $area, null, ['id' => 'area_id', 'class' => 'form-control', 'placeholder' => 'Pilih Rest Area']) }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Shift</label>
+                        {{ Form::select('shift_id', $shift, null, ['id' => 'shift_id', 'class' => 'form-control', 'placeholder' => 'Pilih Shift']) }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Status</label>
+                        {{ Form::select('status_id', $status, null, ['id' => 'status_id', 'class' => 'form-control', 'placeholder' => 'Pilih Status']) }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
                         <label>Tanggal Awal</label>
                         {!! Form::hidden('filter_from', request('filter_from'), ['class' => 'from']) !!}
                         {!! Form::text('filter_from_alt', request('filter_from_alt'), ['class' => 'form-control from_alt', 'placeholder' => 'Tanggal Awal', 'autocomplete' => 'off']) !!}
@@ -121,6 +139,10 @@
     <script>
         $(function() {
             $('#kelompok_id').select2({placeholder: "Kelompok", width:'100%'});
+            $('#area_id').select2({placeholder: "Rest Area", width:'100%'});
+            $('#shift_id').select2({placeholder: "Shift", width:'100%'});
+            $('#status_id').select2({placeholder: "Status", width:'100%'});
+
             $('#export_kelompok').select2({placeholder: "Kelompok", width:'100%'});
             $('#export_area').select2({placeholder: "Area", width:'100%'});
             $('#export_shift').select2({placeholder: "Shift", width:'100%'});
@@ -190,6 +212,9 @@
                     url: '{{ url('monitor/inspections_data') }}',
                     data: function(d) {
                         d.kelompok_id = $('select[name=kelompok_id]').val();
+                        d.area_id = $('select[name=area_id]').val();
+                        d.shift_id = $('select[name=shift_id]').val();
+                        d.status_id = $('select[name=status_id]').val();
                         d.from = $('input[name=filter_from]').val();
                         d.to = $('input[name=filter_to]').val();
                     }

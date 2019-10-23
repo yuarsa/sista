@@ -41,13 +41,13 @@ Route::group(['middleware' => 'auth'], function () {
         Route::group(['prefix' => 'monitor', 'namespace' => 'Monitors'], function () {
             Route::resource('performances', 'AssetPerformanceController');
             Route::get('performances_data', 'AssetPerformanceController@datatables');
-            Route::get('performances_print', 'AssetPerformanceController@printTable');
+            Route::post('performances_print', 'AssetPerformanceController@printTable');
             Route::resource('inspections', 'InspectionController');
             Route::get('inspections_data', 'InspectionController@datatables');
             Route::post('inspections_print', 'InspectionController@export');
             Route::resource('complaints', 'ComplaintController');
             Route::get('complaints_data', 'ComplaintController@datatables');
-            Route::get('complaints_print', 'ComplaintController@printTable');
+            Route::post('complaints_print', 'ComplaintController@printTable');
         });
 
         Route::group(['prefix' => 'auth', 'namespace' => 'Auth'], function () {

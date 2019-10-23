@@ -19,7 +19,9 @@ class ComplaintController extends Controller
     {
         $status = ['1' => 'Open', '2' => 'Close'];
 
-        return view('monitors.complaint.index', compact('status'));
+        $shift = ['1' => 'Shift 1', '2' => 'Shift 2', '3' => 'Shift 3'];
+
+        return view('monitors.complaint.index', compact('status', 'shift'));
     }
 
     public function datatables(Request $request)
@@ -31,7 +33,7 @@ class ComplaintController extends Controller
 
             $status = $request->status_id;
 
-            $select = Complaint::where('complain_status', 1)->orderBy('created_at', 'DESC');
+            $select = Complaint::orderBy('created_at', 'DESC');
 
             if($from != '' AND $to != '') {
                 $select = $select->between($from. ' 00:00:00', $to. ' 23:59:59');
@@ -137,9 +139,31 @@ class ComplaintController extends Controller
         //
     }
 
-    public function printTable()
+    public function printTable(Request $request)
     {
-        $data = Complaint::get();
+        $status = $request->export_status;
+
+        $shift = $request->export_shift;
+
+        $from = $request->export_from;
+
+        $to = $request->export_to;
+
+        $data = Complaint::orderBy('created_at', 'desc');
+
+        if($status != '') {
+            $data = $data->where('complain_status', $status);
+        }
+
+        if($shift != '') {
+            $data = $data->where('complain_shift_id', $shift);
+        }
+
+        if($from != '' AND $to != '') {
+            $data = $data->between($from. ' 00:00:00', $to. ' 23:59:59');
+        }
+
+        $data = $data->get();
 
         $path = public_path() . '/storage/template/laporan_komplain.xls';
 

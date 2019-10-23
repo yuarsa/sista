@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Monitors;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Masters\Area;
 use App\Models\Masters\AssetGroup;
 use App\Models\Monitors\AssetPerformance;
 use Illuminate\Database\QueryException;
@@ -23,7 +24,9 @@ class AssetPerformanceController extends Controller
 
         $shift = ['1' => 'Shift 1', '2' => 'Shift 2', '3' => 'Shift 3'];
 
-        return view('monitors.perfom.index', compact('kelompok', 'shift'));
+        $area = Area::pluck('area_name', 'area_id')->toArray();
+
+        return view('monitors.perfom.index', compact('kelompok', 'shift', 'area'));
     }
 
     public function datatables(Request $request)
@@ -31,11 +34,13 @@ class AssetPerformanceController extends Controller
         if($request->ajax()) {
             $kelompok = $request->kelompok_id;
 
+            $area = $request->area_id;
+
+            $shift = $request->shift_id;
+
             $from = $request->from;
 
             $to = $request->to;
-
-            $shift = $request->shift_id;
 
             $select = AssetPerformance::with(['kelompok', 'aset']);
 
@@ -43,12 +48,18 @@ class AssetPerformanceController extends Controller
                 $select = $select->where('assetperf_asset_group_id', $kelompok);
             }
 
-            if($from != '' AND $to != '') {
-                $select = $select->between($from. ' 00:00:00', $to. ' 23:59:59');
+            if($area != '') {
+                $select = $select->whereHas('aset', function($q) use($area) {
+                    $q->where('asset_area_id', $area);
+                });
             }
 
             if($shift != '') {
                 $select = $select->where('assetperf_shift', $shift);
+            }
+
+            if($from != '' AND $to != '') {
+                $select = $select->between($from. ' 00:00:00', $to. ' 23:59:59');
             }
 
             $select = $select->get();
@@ -90,61 +101,6 @@ class AssetPerformanceController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
      * Remove the specified resource from storage.
      *
      * @param  int  $id
@@ -165,9 +121,39 @@ class AssetPerformanceController extends Controller
         }
     }
 
-    public function printTable()
+    public function printTable(Request $request)
     {
-        $data = AssetPerformance::get();
+        $kelompok = $request->export_kelompok;
+
+        $area = $request->export_area;
+
+        $shift = $request->export_shift;
+
+        $from = $request->export_from;
+
+        $to = $request->export_to;
+
+        $data = AssetPerformance::with(['aset']);
+
+        if($kelompok != '') {
+            $data = $data->where('assetperf_asset_group_id', $kelompok);
+        }
+
+        if($area != '') {
+            $data = $data->whereHas('aset', function($q) use($area) {
+                $q->where('asset_area_id', $area);
+            });
+        }
+
+        if($shift != '') {
+            $data = $data->where('assetperf_shift', $shift);
+        }
+
+        if($from != '' AND $to != '') {
+            $data = $data->between($from. ' 00:00:00', $to. ' 23:59:59');
+        }
+
+        $data = $data->get();
 
         $path = public_path() . '/storage/template/laporan_performa.xls';
 

@@ -35,6 +35,12 @@ class InspectionController extends Controller
         if($request->ajax()) {
             $kelompok = $request->kelompok_id;
 
+            $area = $request->area_id;
+
+            $shift = $request->shift_id;
+
+            $status = $request->status_id;
+
             $from = $request->from;
 
             $to = $request->to;
@@ -43,6 +49,18 @@ class InspectionController extends Controller
 
             if($kelompok != '') {
                 $select = $select->where('insp_asset_group_id', $kelompok);
+            }
+
+            if($area != '') {
+                $select = $select->where('insp_area_id', $area);
+            }
+
+            if($status != '') {
+                $select = $select->where('insp_status', $status);
+            }
+
+            if($shift != '') {
+                $select = $select->where('insp_shift_id', $shift);
             }
 
             if($from != '' AND $to != '') {
@@ -184,7 +202,7 @@ class InspectionController extends Controller
         }
 
         if($status != '') {
-            $data = $data->where('insp_status', $area);
+            $data = $data->where('insp_status', $status);
         }
 
         if($shift != '') {

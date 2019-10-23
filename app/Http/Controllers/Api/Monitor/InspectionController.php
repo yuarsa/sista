@@ -109,6 +109,9 @@ class InspectionController extends Controller
 
             $request['insp_code'] = $this->_generateCode();
 
+            $request['insp_user_id'] = \Auth::user()->id;
+            $request['insp_shift_id'] = \Auth::user()->shift;
+
             Inspection::create($request->input());
 
             return $this->withCustomResponse(201, 'Created data successfully');
