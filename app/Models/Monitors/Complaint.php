@@ -31,6 +31,8 @@ class Complaint extends Model
         'complain_follow_up_image1',
         'complain_follow_up_image2',
         'complain_follow_up_image3',
+        'complain_user_id',
+        'complain_area_id',
         'created_at',
         'updated_at',
     ];
@@ -48,5 +50,10 @@ class Complaint extends Model
     public function scopeClose($query)
     {
         $query->where('complain_status', 2);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo('App\Models\Auth\User', 'complain_user_id', 'id');
     }
 }

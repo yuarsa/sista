@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Monitors;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Masters\Area;
 use App\Models\Monitors\Complaint;
 use Yajra\DataTables\Facades\DataTables;
 use Maatwebsite\Excel\Facades\Excel;
@@ -21,7 +22,9 @@ class ComplaintController extends Controller
 
         $shift = ['1' => 'Shift 1', '2' => 'Shift 2', '3' => 'Shift 3'];
 
-        return view('monitors.complaint.index', compact('status', 'shift'));
+        $area = Area::pluck('area_name', 'area_id')->toArray();
+
+        return view('monitors.complaint.index', compact('status', 'shift', 'area'));
     }
 
     public function datatables(Request $request)
@@ -31,16 +34,32 @@ class ComplaintController extends Controller
 
             $to = $request->to;
 
+            $area = $request->area_id;
+
+            $shift = $request->shift_id;
+
             $status = $request->status_id;
 
-            $select = Complaint::orderBy('created_at', 'DESC');
+            $select = Complaint::with(['user']);
 
-            if($from != '' AND $to != '') {
-                $select = $select->between($from. ' 00:00:00', $to. ' 23:59:59');
+            if($area != '') {
+                $select = $select->whereHas('user', function($q) use($area) {
+                    $q->where('area_id', $area);
+                });
+            }
+
+            if($shift != '') {
+                $select = $select->whereHas('user', function($q) use($shift) {
+                    $q->where('shift', $shift);
+                });
             }
 
             if($status != '') {
                 $select = $select->where('complain_status', $status);
+            }
+
+            if($from != '' AND $to != '') {
+                $select = $select->between($from. ' 00:00:00', $to. ' 23:59:59');
             }
 
             $select = $select->get();
@@ -72,27 +91,6 @@ class ComplaintController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
      * Display the specified resource.
      *
      * @param  int  $id
@@ -105,43 +103,11 @@ class ComplaintController extends Controller
         return view('monitors.complaint.show', compact('data'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
-
     public function printTable(Request $request)
     {
         $status = $request->export_status;
+
+        $area = $request->export_area;
 
         $shift = $request->export_shift;
 
@@ -149,14 +115,22 @@ class ComplaintController extends Controller
 
         $to = $request->export_to;
 
-        $data = Complaint::orderBy('created_at', 'desc');
+        $data = Complaint::with(['user']);
 
         if($status != '') {
             $data = $data->where('complain_status', $status);
         }
 
+        if($area != '') {
+            $data = $data->whereHas('user', function($q) use($area) {
+                $q->where('area_id', $area);
+            });
+        }
+
         if($shift != '') {
-            $data = $data->where('complain_shift_id', $shift);
+            $data = $data->whereHas('user', function($q) use($shift) {
+                $q->where('shift', $shift);
+            });
         }
 
         if($from != '' AND $to != '') {

@@ -10,30 +10,36 @@
     <form method="post" id="frmFilter">
         <div class="box-body">
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Rest Area</label>
+                        {{ Form::select('area_id', $area, null, ['id' => 'area_id', 'placeholder' => 'Area']) }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Shift</label>
+                        {{ Form::select('shift_id', $shift, null, ['id' => 'shift_id', 'placeholder' => 'Shift']) }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Status</label>
+                        {{ Form::select('status_id', $status, null, ['id' => 'status_id', 'placeholder' => 'Status']) }}
+                    </div>
+                </div>
+                <div class="col-md-6">
                     <div class="form-group">
                         <label>Tanggal Awal</label>
                         {!! Form::hidden('filter_from', request('filter_from'), ['class' => 'from']) !!}
                         {!! Form::text('filter_from_alt', request('filter_from_alt'), ['class' => 'form-control from_alt', 'placeholder' => 'Tanggal Awal', 'autocomplete' => 'off']) !!}
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-6">
                     <div class="form-group">
                         <label>Tanggal Akhir</label>
                         {!! Form::hidden('filter_to', request('filter_to'), ['class' => 'to']) !!}
                         {!! Form::text('filter_to_alt', request('filter_to_alt'), ['class' => 'form-control to_alt', 'placeholder' => 'Tanggal Akhir', 'autocomplete' => 'off']) !!}
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>Status</label>
-                        {{ Form::select('status_id', $status, null, ['id' => 'status_id', 'placeholder' => 'Status']) }}
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>Shift</label>
-                        {{ Form::select('shift_id', $shift, null, ['id' => 'shift_id', 'placeholder' => 'Shift']) }}
                     </div>
                 </div>
             </div>
@@ -80,8 +86,14 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <div class="col-sm-12">
+                            <label>Rest Area</label>
+                            {{ Form::select('export_area', $area, null, ['id' => 'export_area', 'class' => 'form-control', 'placeholder' => 'Rest Area']) }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-12">
                             <label>Shift</label>
-                            {{ Form::select('export_shift', $shift, null, ['id' => 'export_shift', 'class' => 'form-control', 'placeholder' => 'Pilih Shift']) }}
+                            {{ Form::select('export_shift', $shift, null, ['id' => 'export_shift', 'class' => 'form-control', 'placeholder' => 'Shift']) }}
                         </div>
                     </div>
                     <div class="form-group">
@@ -114,7 +126,11 @@
 @push('scripts')
     <script>
         $(function() {
+            $('#shift_id').select2({placeholder: "Shift", width:'100%'});
+            $('#area_id').select2({placeholder: "Area", width:'100%'});
             $('#status_id').select2({placeholder: "Status", width:'100%'});
+
+            $('#export_area').select2({placeholder: "Area", width:'100%'});
             $('#export_shift').select2({placeholder: "Shift", width:'100%'});
             $('#export_status').select2({placeholder: "Status", width:'100%'});
 
@@ -184,6 +200,8 @@
                         d.from = $('input[name=filter_from]').val();
                         d.to = $('input[name=filter_to]').val();
                         d.status_id = $('select[name=status_id]').val();
+                        d.area_id = $('select[name=area_id]').val();
+                        d.shift_id = $('select[name=shift_id]').val();
                     }
                 },
                 columns: [
